@@ -2,7 +2,11 @@ const axios = require('axios');
 const dayjs = require('dayjs');
 const colors = require('colors');
 const utc = require('dayjs/plugin/utc')
-dayjs.extend(utc);
+const timezone = require('dayjs/plugin/timezone') // dependent on utc plugin
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 
 const getNightscoutToken = function (token) {
   if (token.trim() !== '') {
@@ -80,6 +84,26 @@ const selectData = function (entries) {
 
 const getNightscoutAllEntries = async function (baseUrl, token, fromDate, toDate) {
 	
+  const urlProf = `${baseUrl}/api/v1/profile.json?count=1${getNightscoutToken(token)}`;
+  console.log('glucose entries url', urlProf.gray);
+
+  const responseProf = await axios.get(urlProf, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  console.log('Profile entries read:', JSON.stringify(responseProf.data,null, 4).gray);
+  
+  const defaultProf = responseProf.data[0].defaultProfile;
+  console.log('Default profile', defaultProf.green);
+  
+  const timeZone = responseProf.data[0].store[defaultProf].timezone ?? "Europe/Moscow";
+  
+  console.log('Profile Time Zone', timeZone.green);
+  
+  const tzUTCOffset = dayjs().tz(timeZone).utcOffset();
+  console.log('UTC offset of profile time Zone', tzUTCOffset.toString().blue);
+  
   const url = `${baseUrl}/api/v1/entries.json?find[dateString][$gte]=${fromDate}&find[dateString][$lt]=${toDate}&count=131072${getNightscoutToken(token)}`;
   console.log('glucose entries url', url.gray);
 
@@ -89,8 +113,8 @@ const getNightscoutAllEntries = async function (baseUrl, token, fromDate, toDate
     }
   });
   console.log('glucose entries read:', (response.data || []).length.toString());
-  const utcOffset = response.data[0].utcOffset;
-  console.log('UTC Offset:', utcOffset.toString());
+  const utcOffset = tzUTCOffset ?? response.data[0].utcOffset;
+  console.log('UTC Offset:', utcOffset.toString().blue);
   
   const dataGlucose = response.data.filter((value, index, Arr) => index % 3 == 0).map(d => {
 	const dateStringLocal = dayjs.utc(d.dateString).utcOffset(utcOffset);
