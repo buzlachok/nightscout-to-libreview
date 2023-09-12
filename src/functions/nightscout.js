@@ -97,7 +97,7 @@ const getNightscoutAllEntries = async function (baseUrl, token, fromDate, toDate
   const defaultProf = responseProf.data[0].defaultProfile;
   console.log('Default profile', defaultProf.green);
   
-  const timeZone = responseProf.data[0].store[defaultProf].timezone ?? "Europe/Moscow";
+  const timeZone = responseProf.data[0].store[defaultProf].timezone || "Europe/Moscow";
   
   console.log('Profile Time Zone', timeZone.green);
   
@@ -113,7 +113,7 @@ const getNightscoutAllEntries = async function (baseUrl, token, fromDate, toDate
     }
   });
   console.log('glucose entries read:', (response.data || []).length.toString());
-  const utcOffset = tzUTCOffset ?? response.data[0].utcOffset;
+  const utcOffset = tzUTCOffset || response.data[0].utcOffset;
   console.log('UTC Offset:', utcOffset.toString().blue);
   
   const dataGlucose = response.data.filter((value, index, Arr) => index % 3 == 0).map(d => {
