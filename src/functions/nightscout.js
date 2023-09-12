@@ -92,7 +92,7 @@ const getNightscoutAllEntries = async function (baseUrl, token, fromDate, toDate
       'Content-Type': 'application/json'
     }
   });
-  console.log('Profile entries read:', JSON.stringify(responseProf.data,null, 4).gray);
+  //console.log('Profile entries read:', JSON.stringify(responseProf.data,null, 4).gray);
   
   const defaultProf = responseProf.data[0].defaultProfile;
   console.log('Default profile', defaultProf.green);
